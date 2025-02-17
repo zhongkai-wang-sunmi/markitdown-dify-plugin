@@ -43,12 +43,53 @@ files:
 
 ### Response Format
 
-1. **Single File Response**
+The plugin provides three types of response formats for maximum flexibility:
+
+1. **JSON Response** (New)
+   ```json
+   {
+     "status": "success|error",
+     "total_files": 2,
+     "successful_conversions": 2,
+     "results": [
+       {
+         "filename": "example1.pdf",
+         "original_format": "pdf",
+         "markdown_content": "# Content...",
+         "status": "success"
+       },
+       {
+         "filename": "example2.docx",
+         "original_format": "docx",
+         "markdown_content": "# Content...",
+         "status": "success"
+       }
+     ]
+   }
+   ```
+
+   Error response example:
+   ```json
+   {
+     "filename": "failed.pdf",
+     "original_format": "pdf",
+     "error": "Error message",
+     "status": "error"
+   }
+   ```
+
+2. **Blob Response**
+   - Returns raw markdown content as a blob
+   - Includes mime_type metadata: "text/markdown"
+   - Useful for direct content processing
+
+3. **Text Response** (Legacy)
+   - Single File:
    ```
    [Markdown content of the file]
    ```
 
-2. **Multiple Files Response**
+   - Multiple Files:
    ```
    ==================================================
    File 1: example1.pdf
@@ -129,6 +170,26 @@ For issues and feature requests, please create an issue in the repository or con
 ---
 
 *Note: This plugin is based on MarkItDown 0.0.2a1 and may receive updates as the base library evolves to its first non-alpha release.*
+
+## Response Types Use Cases
+
+1. **JSON Response**
+   - Workflow automation and data processing
+   - Status tracking and error handling
+   - Structured data extraction
+   - API integrations
+
+2. **Blob Response**
+   - Direct content processing
+   - Raw markdown handling
+   - Stream processing
+   - File system operations
+
+3. **Text Response**
+   - Human readable output
+   - Legacy system compatibility
+   - Simple content viewing
+   - Direct LLM input
 
 
 
