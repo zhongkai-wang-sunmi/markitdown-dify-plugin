@@ -1,106 +1,134 @@
-# ReAG (Reasoning-Augmented Generation)
+# MarkItDown Dify Plugin
 
-**Author:** evan  
-**Version:** 0.0.1
+A powerful document conversion plugin for Dify based on MarkItDown 0.0.2a1, designed to convert various file formats into Markdown with high accuracy and reliability.
 
 ## Overview
 
-ReAG is a method that skips the retrieval step entirely. Instead of preprocessing documents into searchable snippets, ReAG feeds raw materials—text files, web pages, spreadsheets—directly to the language model. The model then decides what matters and why, synthesizing answers in one go.
+This plugin serves as an excellent alternative to traditional document extraction nodes, offering robust file conversion capabilities within the Dify ecosystem. It leverages MarkItDown's plugin-based architecture to provide seamless conversion of multiple file formats to Markdown.
 
-## Traditional RAG vs ReAG
+## Supported File Formats
 
-### Traditional RAG System
-Traditional RAG systems typically operate in two phases:
-1. Semantic Search Phase: First uses retrieval techniques to select documents that are superficially similar to the query content
-2. Generation Phase: Then uses language models to generate answers from these documents
+- **Documents**
+  - PDF files (`.pdf`)
+  - Microsoft Word documents (`.doc`, `.docx`)
+  - Microsoft PowerPoint presentations (`.ppt`, `.pptx`)
+  - Microsoft Excel spreadsheets (`.xls`, `.xlsx`)
+  - HTML files (`.html`, `.htm`)
 
-However, this two-phase approach may overlook deeper contextual relationships in documents and potentially introduce irrelevant content.
+- **Media Files**
+  - Images with EXIF metadata and OCR support
+  - Audio files with metadata and speech transcription
 
-### ReAG's Unified Strategy
-ReAG adopts a unified approach:
-- It passes raw document content directly to the language model, allowing the model to independently evaluate and integrate the complete context
-- This method produces more accurate, detailed answers that better reflect complex contextual relationships
+- **Data Formats**
+  - CSV files
+  - JSON documents
+  - XML files
+  - Text files
 
-## How ReAG Cuts Through the Noise
+- **Archives**
+  - ZIP files (with automatic content iteration)
 
-ReAG operates on a simple idea: let the language model do the heavy lifting. Instead of relying on pre-built indexes or embeddings, ReAG hands the model raw documents and asks two questions:
+## Usage in Dify
 
-1. Is this document useful for the task?
-2. What specific parts of it matter?
+### Parameters
 
-### Example
-If you ask, "Why are polar bear populations declining?" a traditional RAG system might fetch documents containing phrases like "Arctic ice melt" or "bear habitats." But ReAG goes further. It scans entire documents, considering their full context and meaning rather than just their semantic similarity to the query. A research paper titled "Thermal Dynamics of Sea Ice" might be ignored—unless the model notices a section linking ice loss to disruptions in bear feeding patterns.
+The plugin accepts the following parameters in the Dify interface:
 
-This approach mirrors how humans research: we skim sources, discard irrelevant ones, and focus on passages that address our specific question. ReAG replicates this behavior programmatically, using the model's ability to infer connections rather than relying on superficial semantics.
+```yaml
+files:
+  type: files
+  required: false
+  description: "Array of files to be converted to Markdown"
+```
 
-## Understanding the Difference
+### Response Format
 
-### Traditional RAG
-Operates like a librarian:
-- Indexes books (documents) by summarizing their covers (embeddings)
-- Uses those summaries to guess which books might answer your question
-- Process is fast but reductive—prioritizes lexical proximity over functional utility
+1. **Single File Response**
+   ```
+   [Markdown content of the file]
+   ```
 
-### ReAG
-Acts like a scholar:
-- Reads every book in full
-- Underlines relevant paragraphs
-- Synthesizes insights based on the query's deeper intent
+2. **Multiple Files Response**
+   ```
+   ==================================================
+   File 1: example1.pdf
+   ==================================================
 
-## Technical Implementation
+   [Markdown content of file 1]
 
-### Key Parameters in reag.yaml
-The following parameters are utilized in reag.py:
+   ==================================================
+   File 2: example2.docx
+   ==================================================
 
-#### model
-- Determines the language model used for answer generation
-- Configured through LLMModelConfig with provider, model name, and operation mode
+   [Markdown content of file 2]
+   ```
 
-#### query
-- User input string driving the answer generation process
-- Combined with system prompts (e.g., REAG_SYSTEM_PROMPT) to create complete prompt messages
+### Example Usage in Prompts
 
-#### files
-- Optional parameter for file uploads
-- File content processed using MarkItDown module for text extraction
+```
+Please convert the attached files to Markdown format.
+{@markitdown files=["document.pdf", "presentation.pptx"]}
+```
 
-### Workflow
-1. Tool trigger: reag.py's _invoke method receives parameters from reag.yaml (model, query, files)
-2. File processing: Creates temporary files and converts content to text using MarkItDown
-3. Parallel processing: Uses ThreadPoolExecutor for document processing
-4. Response structure: Returns JSON object containing:
-   - content: Generated answer
-   - reasoning: Explanation of reasoning process
-   - is_irrelevant: Boolean indicating relevance
-   - document: Original document info (name and content)
+## Features
 
-## Trade-offs and Considerations
+- **Batch Processing**: Process multiple files in a single request
+- **Clear File Separation**: When processing multiple files, content is clearly separated with headers and dividers
+- **Format Preservation**: Maintains important formatting elements in the Markdown output
+- **Error Handling**: Provides clear error messages for failed conversions
+- **Automatic Cleanup**: Temporary files are automatically managed and cleaned up
 
-### Challenges
-- **Cost**: Processing entire documents with LLMs is more expensive than vector search
-- **Speed**: Can struggle with massive datasets despite parallelization
+## Best Practices
 
-### Ideal Use Cases
-1. Complex, open-ended queries
-2. Dynamic data (news, research repositories)
-3. Multimodal data (images, tables, charts)
+1. **File Size**: While there's no strict limit, it's recommended to keep individual files under 50MB for optimal performance
+2. **Batch Processing**: You can process multiple files simultaneously, but consider limiting batches to 5-10 files
+3. **Format Support**: When possible, use standard file formats from the supported list for best results
+4. **Error Handling**: Always check for error messages in the response when processing critical documents
 
-## Future Prospects
+## Integration Example
 
-### Key Trends
-1. Cheaper, faster language models
-   - Improvement in open-source models (Llama, DeepSeek)
-   - Advancement in quantization techniques
+Here's how to integrate the plugin into your Dify workflow:
 
-2. Larger context windows
-   - Expanding from millions to billions of tokens
-   - Enhanced document processing capabilities
+1. **Document Analysis Flow**
+   ```
+   Input: {files} -> MarkItDown Plugin -> LLM Analysis
+   ```
 
-3. Hybrid systems
-   - Combining lightweight embedding filters with ReAG
-   - Balancing speed and accuracy
+2. **Content Extraction Flow**
+   ```
+   Input: {files} -> MarkItDown Plugin -> Text Extraction -> Database Storage
+   ```
 
-## Resources
-- Twitter: https://x.com/pelaseyed/status/1886448015533089248
-- Blog: https://www.superagent.sh/blog/reag-reasoning-augmented-generation
-- GitHub: https://github.com/superagent-ai/reag/tree/main
+## Advantages Over Traditional Document Extraction
+
+1. **Format Support**: Broader range of supported file formats
+2. **Metadata Preservation**: Retains important metadata from source files
+3. **Structured Output**: Consistently formatted Markdown output
+4. **Batch Processing**: Efficient handling of multiple files
+5. **Clear Separation**: Better organization of multiple file contents
+6. **Error Handling**: Comprehensive error reporting and handling
+
+## Technical Notes
+
+- Based on MarkItDown 0.0.2a1
+- Maintains backward compatibility with 0.0.1a3
+- Implements plugin-based architecture for extensibility
+- Automatic temporary file management
+- Thread-safe processing for concurrent requests
+
+## Limitations
+
+- Network connectivity required for some conversion operations
+- Processing time may vary based on file size and complexity
+- Some advanced formatting may be simplified in the Markdown output
+
+## Support
+
+For issues and feature requests, please create an issue in the repository or contact the plugin maintainer.
+
+---
+
+*Note: This plugin is based on MarkItDown 0.0.2a1 and may receive updates as the base library evolves to its first non-alpha release.*
+
+
+
